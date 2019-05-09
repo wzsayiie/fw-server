@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e -u
+
+cd `dirname $0`
+
+## configuration begin
+target_oses="windows darwin"
+output_name="server"
+## configuration end
+
+for os in $target_oses; do
+
+    export GOOS=$os
+    export GOARCH=amd64
+
+    if [ "$os" == "windows" ]; then
+        output_file="$output_name".exe
+    else
+        output_file="$output_name"
+    fi
+
+    rm      -rf BUILD/"$os"_amd64/$output_file
+    mkdir    -p BUILD/"$os"_amd64
+    go build -o BUILD/"$os"_amd64/$output_file cmdserver/*.go
+
+done
