@@ -20,8 +20,8 @@ for os in $target_oses; do
         output_file="$output_name"
     fi
 
-    rm      -rf BUILD/"$os"_amd64/$output_file
-    mkdir    -p BUILD/"$os"_amd64
-    go build -o BUILD/"$os"_amd64/$output_file cmdserver/*.go
+    pushd cmdserver
+    go build -o ../BUILD/"$GOOS"_"$GOARCH"/$output_file
+    popd
 
 done
