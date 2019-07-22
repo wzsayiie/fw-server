@@ -4,4 +4,4 @@ set -e -u
 
 cd `dirname $0`
 
-go run cmdserver/*.go
+go run cmdserver/main.go
