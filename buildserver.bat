@@ -4,12 +4,16 @@ cd /d %~dp0
 
 ::build every target
 
-set target_os=windows
-set file_name=server.exe
-call :build
-
 set target_os=darwin
 set file_name=server
+call :build
+
+set target_os=linux
+set file_name=server
+call :build
+
+set target_os=windows
+set file_name=server.exe
 call :build
 
 goto :end

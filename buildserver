@@ -5,7 +5,7 @@ set -e -u
 cd `dirname $0`
 
 ## configuration begin
-target_oses="windows darwin"
+target_oses="darwin linux windows"
 output_name="server"
 ## configuration end
 
