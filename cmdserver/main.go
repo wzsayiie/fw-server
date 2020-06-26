@@ -1,9 +1,10 @@
+//cmdserver
+
 package main
 
 import (
-	"fmt"
+	"src/log"
 )
 
 func main() {
-	fmt.Printf("server start\n")
 }
