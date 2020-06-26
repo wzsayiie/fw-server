@@ -1,3 +1,3 @@
-module lc
+module src
 
-go 1.12
+go 1.14
