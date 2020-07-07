@@ -2,12 +2,127 @@ package api
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
+	"reflect"
 	"src/log"
+	"strconv"
 )
+
+// unmarshal query map into a struct:
+// only type bool, int, uint, float and string are supported.
+
+func UnmarshalQuery(query map[string]string, out interface{}) error {
+	if query == nil || out == nil {
+		return fmt.Errorf("parameter is nil")
+	}
+
+	var ptrVal = reflect.ValueOf(out)
+	if ptrVal.Kind() != reflect.Ptr {
+		return fmt.Errorf("output parameter isn't a ptr")
+	}
+
+	var stcVal = ptrVal.Elem()
+	if stcVal.Kind() != reflect.Struct {
+		return fmt.Errorf("output parameter isn't point to a struct")
+	}
+
+	for i := 0; i < stcVal.NumField(); i++ {
+		var fieldVal = stcVal.Field(i)
+		var fieldTag = structFieldTag(stcVal, i)
+
+		var str, exist = query[fieldTag]
+		if !exist {
+			// if there is no corresponding new value, keep the origin value.
+			continue
+		}
+
+		var err = setStructField(&fieldVal, fieldTag, str)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func structFieldTag(stc reflect.Value, idx int) string {
+	var typ = stc.Type().Field(idx)
+	var tag = typ.Tag.Get("query")
+
+	if tag == "" {
+		return typ.Name
+	} else {
+		return tag
+	}
+}
+
+func setStructField(field *reflect.Value, name string, str string) error {
+	switch field.Kind() {
+	case reflect.Bool:
+		var val, err = strconv.ParseBool(str)
+		if err != nil {
+			return fmt.Errorf("can't unmarshal '%s' into '%s' of type bool", str, name)
+		}
+
+		field.SetBool(val)
+
+	case reflect.Int:
+		fallthrough
+	case reflect.Int8:
+		fallthrough
+	case reflect.Int16:
+		fallthrough
+	case reflect.Int32:
+		fallthrough
+	case reflect.Int64:
+		var val, err = strconv.ParseInt(str, 10, 64)
+		if err != nil {
+			return fmt.Errorf("can't unmarshal '%s' into '%s' of type int", str, name)
+		}
+
+		field.SetInt(val)
+
+	case reflect.Uint:
+		fallthrough
+	case reflect.Uint8:
+		fallthrough
+	case reflect.Uint16:
+		fallthrough
+	case reflect.Uint32:
+		fallthrough
+	case reflect.Uint64:
+		var val, err = strconv.ParseUint(str, 10, 64)
+		if err != nil {
+			return fmt.Errorf("can't unmarshal '%s' into '%s' of type uint", str, name)
+		}
+
+		field.SetUint(val)
+
+	case reflect.Float32:
+		fallthrough
+	case reflect.Float64:
+		var val, err = strconv.ParseFloat(str, 64)
+		if err != nil {
+			return fmt.Errorf("can't unmarshal '%s' into '%s' of type float", str, name)
+		}
+
+		field.SetFloat(val)
+
+	case reflect.String:
+		field.SetString(str)
+
+	default:
+		return fmt.Errorf("can't set '%s' cause unsupported type", name)
+	}
+
+	return nil
+}
+
+// a http server:
 
 type HTTPTrans struct {
 	FromAddr string
@@ -36,7 +151,7 @@ func HTTPServe(port uint16, handler func(trans *HTTPTrans)) {
 	log.I("}")
 
 	http.HandleFunc("/", func(resp http.ResponseWriter, req *http.Request) {
-		handle(handler, resp, req)
+		httpHandle(handler, resp, req)
 	})
 
 	// don't specify a clear ip,
@@ -47,7 +162,7 @@ func HTTPServe(port uint16, handler func(trans *HTTPTrans)) {
 
 	var err = http.ListenAndServe(addr, nil)
 	if err != nil {
-		log.E("%s", err.Error())
+		log.E("%s", err)
 	}
 }
 
@@ -79,7 +194,7 @@ func favLocalAddrs() []net.Addr {
 	return nil
 }
 
-func handle(handler func(trans *HTTPTrans), resp http.ResponseWriter, req *http.Request) {
+func httpHandle(handler func(trans *HTTPTrans), resp http.ResponseWriter, req *http.Request) {
 
 	logReq(req)
 
@@ -124,16 +239,19 @@ func logReq(req *http.Request) {
 }
 
 func logRespExcept(req *http.Request, resp http.ResponseWriter, code int, desc string) {
-	// NOTE: json is default.
-	var val = fmt.Sprintf(`{"errcode":%d,"errdesc":"%s"}`, code, desc)
 
-	log.E("resp {")
-	log.E("  from: %s", req.RemoteAddr)
-	log.E("  path: %s", req.URL.String())
-	log.E("  resp: %s", val)
-	log.E("}")
+	type Body struct {
+		XMLName xml.Name `json:"-" xml:"root"`
 
-	resp.Write([]byte(val))
+		ErrCode int64  `json:"errcode" xml:"errcode"`
+		ErrDesc string `json:"errdesc" xml:"errdesc"`
+	}
+
+	var body = Body{
+		ErrCode: int64(code),
+		ErrDesc: desc,
+	}
+	logRespNormal(req, resp, body)
 }
 
 func logRespNormal(req *http.Request, resp http.ResponseWriter, body interface{}) {
@@ -153,6 +271,7 @@ func filterQuery(raw url.Values) (map[string]string, error) {
 	var ret = make(map[string]string)
 
 	for k, v := range raw {
+		// parameters with the same name are not supported.
 		if len(v) > 1 {
 			return nil, fmt.Errorf("duplicate paramter")
 		}

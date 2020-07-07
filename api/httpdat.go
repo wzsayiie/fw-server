@@ -4,23 +4,23 @@ import (
 	"encoding/xml"
 )
 
-type XXXReqQuery struct {
-	Int int    `query:"int"`
+type AlphaReqQuery struct {
+	Int int64  `query:"int"`
 	Str string `query:"str"`
 }
 
 const (
-	XXXRespEOkay     = 0
-	XXXRespEQueryErr = 1
+	AlphaRespEOkay     = 0
+	AlphaRespEQueryErr = 1
 	/* ... */
 )
 
-type XXXRespBody struct {
+type AlphaRespBody struct {
 	XMLName xml.Name `json:"-" xml:"root"`
 
-	ErrCode int    `json:"errcode" xml:"errcode"`
+	ErrCode int64  `json:"errcode" xml:"errcode"`
 	ErrDesc string `json:"errdesc" xml:"errdesc"`
 
-	Int int    `json:"int" xml:"int"`
+	Int int64  `json:"int" xml:"int"`
 	Str string `json:"str" xml:"str"`
 }
