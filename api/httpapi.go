@@ -33,6 +33,10 @@ func UnmarshalQuery(query map[string]string, out interface{}) error {
 	for i := 0; i < stcVal.NumField(); i++ {
 		var fieldVal = stcVal.Field(i)
 		var fieldTag = structFieldTag(stcVal, i)
+		if fieldTag == "-" {
+			// ignore this field.
+			continue
+		}
 
 		var str, exist = query[fieldTag]
 		if !exist {
@@ -238,7 +242,7 @@ func logReq(req *http.Request) {
 	log.I("}")
 }
 
-func logRespExcept(req *http.Request, resp http.ResponseWriter, code int, desc string) {
+func logRespExcept(req *http.Request, resp http.ResponseWriter, code int64, desc string) {
 
 	type Body struct {
 		XMLName xml.Name `json:"-" xml:"root"`
@@ -248,7 +252,7 @@ func logRespExcept(req *http.Request, resp http.ResponseWriter, code int, desc s
 	}
 
 	var body = Body{
-		ErrCode: int64(code),
+		ErrCode: code,
 		ErrDesc: desc,
 	}
 	logRespNormal(req, resp, body)
