@@ -22,22 +22,25 @@ func DefHTTPHandler(trans *HTTPTrans) {
 
 func handleAlpha(trans *HTTPTrans) {
 
-	var reqQuery AlphaReqQuery
-	var respBody AlphaRespBody
+	var request AlphaRequest
+	var response AlphaResponse
 
-	var err = UnmarshalQuery(trans.ReqQuery, &reqQuery)
-	if err == nil {
-		respBody.ErrCode = AlphaRespEOkay
-		respBody.ErrDesc = ""
-		respBody.Int = reqQuery.Int
-		respBody.Str = reqQuery.Str
-
-	} else {
-		respBody.ErrCode = AlphaRespEQueryErr
-		respBody.ErrDesc = err.Error()
+	//
+	var err = UnmarshalQuery(trans.ReqQuery, &request)
+	if err != nil {
+		response.ErrCode = AlphaCodeQueryErr
+		response.ErrDesc = err.Error()
+		trans.RespBody = response
+		return
 	}
 
-	trans.RespBody = respBody
+	//
+	response.ErrCode = AlphaCodeOkay
+	response.ErrDesc = ""
+	response.Int = request.Int
+	response.Str = request.Str
+
+	trans.RespBody = response
 }
 
 func handleBeta(trans *HTTPTrans) {

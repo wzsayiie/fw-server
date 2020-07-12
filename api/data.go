@@ -4,18 +4,18 @@ import (
 	"encoding/xml"
 )
 
-type AlphaReqQuery struct {
+type AlphaRequest struct {
 	Int int64  `query:"int"`
 	Str string `query:"str"`
 }
 
 const (
-	AlphaRespEOkay     = 0
-	AlphaRespEQueryErr = 1
+	AlphaCodeOkay     = 0
+	AlphaCodeQueryErr = 1
 	/* ... */
 )
 
-type AlphaRespBody struct {
+type AlphaResponse struct {
 	XMLName xml.Name `json:"-" xml:"root"`
 
 	ErrCode int64  `json:"errcode" xml:"errcode"`
