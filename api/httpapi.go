@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"net"
 	"net/http"
 	"net/url"
 	"reflect"
+	"src/local"
 	"src/log"
 	"strconv"
 )
@@ -144,14 +144,17 @@ func HTTPServe(port uint16, handler func(trans *HTTPTrans)) {
 		return
 	}
 
-	// print local address infomation.
+	// print local address information.
 	// NOTE:
 	// only the first network adpater found is printed.
 	// by default, there is only one adapter on this host.
+	var ip4 string
+	var ip6 string
+	local.HostIPs(&ip4, &ip6)
+
 	log.I("http ready on {")
-	for _, v := range favLocalAddrs() {
-		log.I("  %s :%d", v.String(), port)
-	}
+	log.I("  [%s]:%d", ip6, port)
+	log.I("  %s:%d", ip4, port)
 	log.I("}")
 
 	http.HandleFunc("/", func(resp http.ResponseWriter, req *http.Request) {
@@ -168,34 +171,6 @@ func HTTPServe(port uint16, handler func(trans *HTTPTrans)) {
 	if err != nil {
 		log.E("%s", err)
 	}
-}
-
-func favLocalAddrs() []net.Addr {
-
-	var intfs, intfErr = net.Interfaces()
-	if intfErr != nil {
-		return nil
-	}
-
-	for _, v := range intfs {
-		if v.Flags&net.FlagUp == 0 /* isn't working */ {
-			continue
-		}
-		if v.Flags&net.FlagLoopback != 0 /* is loopback */ {
-			continue
-		}
-
-		var addrs, addrErr = v.Addrs()
-		if addrErr != nil {
-			continue
-		}
-
-		// there are usually two valus, ipv4 and ipv6.
-		if len(addrs) != 0 {
-			return addrs
-		}
-	}
-	return nil
 }
 
 func httpHandle(handler func(trans *HTTPTrans), resp http.ResponseWriter, req *http.Request) {
