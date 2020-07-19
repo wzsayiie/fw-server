@@ -1,22 +1,22 @@
 package api
 
 import (
-	"src/log"
+	"src/clog"
 )
 
 func DefHTTPHandler(trans *HTTPTrans) {
 
 	switch trans.ReqPath {
 	case "/alpha":
-		log.I("call api 'alpha'")
+		clog.I("call api 'alpha'")
 		handleAlpha(trans)
 
 	case "/beta":
-		log.I("call api 'beta'")
+		clog.I("call api 'beta'")
 		handleBeta(trans)
 
 	default:
-		log.E("unknown api '%s'", trans.ReqPath)
+		clog.E("unknown api '%s'", trans.ReqPath)
 	}
 }
 

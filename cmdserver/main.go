@@ -3,7 +3,7 @@
 package main
 
 import (
-	"src/log"
+	"src/clog"
 )
 
 func main() {

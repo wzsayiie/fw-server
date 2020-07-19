@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"src/clog"
 	"src/local"
-	"src/log"
 	"strconv"
 )
 
@@ -140,7 +140,7 @@ type HTTPTrans struct {
 func HTTPServe(port uint16, handler func(trans *HTTPTrans)) {
 
 	if handler == nil {
-		log.E("http handler is nil")
+		clog.E("http handler is nil")
 		return
 	}
 
@@ -152,10 +152,10 @@ func HTTPServe(port uint16, handler func(trans *HTTPTrans)) {
 	var ip6 string
 	local.HostIPs(&ip4, &ip6)
 
-	log.I("http ready on {")
-	log.I("  [%s]:%d", ip6, port)
-	log.I("  %s:%d", ip4, port)
-	log.I("}")
+	clog.I("http ready on {")
+	clog.I("  [%s]:%d", ip6, port)
+	clog.I("  %s:%d", ip4, port)
+	clog.I("}")
 
 	http.HandleFunc("/", func(resp http.ResponseWriter, req *http.Request) {
 		httpHandle(handler, resp, req)
@@ -169,7 +169,7 @@ func HTTPServe(port uint16, handler func(trans *HTTPTrans)) {
 
 	var err = http.ListenAndServe(addr, nil)
 	if err != nil {
-		log.E("%s", err)
+		clog.E("%s", err)
 	}
 }
 
@@ -210,11 +210,11 @@ func httpHandle(handler func(trans *HTTPTrans), resp http.ResponseWriter, req *h
 }
 
 func logReq(req *http.Request) {
-	log.I("REQ {")
-	log.I("  FROM: %s", req.RemoteAddr)
-	log.I("  MTHD: %s", req.Method)
-	log.I("  PATH: %s", req.URL.String())
-	log.I("}")
+	clog.I("REQ {")
+	clog.I("  FROM: %s", req.RemoteAddr)
+	clog.I("  MTHD: %s", req.Method)
+	clog.I("  PATH: %s", req.URL.String())
+	clog.I("}")
 }
 
 func logRespExcept(req *http.Request, resp http.ResponseWriter, code int64, desc string) {
@@ -237,11 +237,11 @@ func logRespNormal(req *http.Request, resp http.ResponseWriter, body interface{}
 	// NOTE: json is default.
 	var val, _ = json.Marshal(body)
 
-	log.I("resp {")
-	log.I("  from: %s", req.RemoteAddr)
-	log.I("  path: %s", req.URL.String())
-	log.I("  resp: %s", val)
-	log.I("}")
+	clog.I("resp {")
+	clog.I("  from: %s", req.RemoteAddr)
+	clog.I("  path: %s", req.URL.String())
+	clog.I("  resp: %s", val)
+	clog.I("}")
 
 	resp.Write([]byte(val))
 }

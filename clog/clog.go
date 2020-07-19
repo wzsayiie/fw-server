@@ -1,4 +1,4 @@
-package log
+package clog
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 
 func print(tag string, format string, args []interface{}) {
 
-	//time.
-	//
+	var msg string = fmt.Sprintf(format, args...)
+
 	//format specifiers:
 	//|
 	//| mm:dd HH:MM:SECOND    yy zone
@@ -19,14 +19,10 @@ func print(tag string, format string, args []interface{}) {
 	//
 	var now string = time.Now().Format("06-01-02 15:04:05.000")
 
-	//caller.
 	//| Caller(0): print();
 	//| Caller(1): I() or E();
 	//| Caller(2): the user function.
 	var _, path, line, okay = runtime.Caller(2)
-
-	//message.
-	var msg string = fmt.Sprintf(format, args...)
 
 	if okay {
 		_, file := filepath.Split(path)
