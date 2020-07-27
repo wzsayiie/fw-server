@@ -1,21 +1,21 @@
-package api
+package ahttp
 
 import (
 	"encoding/xml"
 )
 
-type AlphaRequest struct {
+type AlphaQuery struct {
 	Int int64  `query:"int"`
 	Str string `query:"str"`
 }
 
 const (
 	AlphaCodeOkay     = 0
-	AlphaCodeQueryErr = 1
+	AlphaCodeParamErr = 1
 	/* ... */
 )
 
-type AlphaResponse struct {
+type AlphaResp struct {
 	XMLName xml.Name `json:"-" xml:"root"`
 
 	ErrCode int64  `json:"errcode" xml:"errcode"`
