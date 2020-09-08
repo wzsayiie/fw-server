@@ -1,3 +1,12 @@
+## OBSOLETED
+
+This respository has been obsoleted,
+it will not be improved or updated.
+
+on Sept 8, 2020.
+
+---
+
 ## Introduction
 
 This is a simple server program framework, written by `Go`.
